@@ -406,8 +406,12 @@ class LanPaint_SamplerCustom:
                      "sigmas": ("SIGMAS",),
                      "latent_image": ("LATENT",),
                      "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "Number of steps for Langevin dynamics, representing turns of thinking per step."}),
+                     "LanPaint_Lambda": ("FLOAT", {"default": 8.0, "min": 0.1, "max": 50.0, "step": 0.1, "tooltip": "Bidirectional guidance scale. Higher values align with known regions but may cause instability."}),
+                     "LanPaint_StepSize": ("FLOAT", {"default": 0.15, "min": 0.0001, "max": 1.0, "step": 0.01, "tooltip": "Step size for Langevin dynamics. Higher values speed convergence but may be unstable."}),
+                     "LanPaint_Beta": ("FLOAT", {"default": 1.0, "min": 0.0001, "max": 5.0, "step": 0.1, "tooltip": "Step size ratio between masked/unmasked regions. Lower values balance high Lambda."}),
+                     "LanPaint_Friction": ("FLOAT", {"default": 15.0, "min": 0.0, "max": 50.0, "step": 0.1, "tooltip": "Friction parameter for fast Langevin. Lower values speed convergence but may be unstable."}),
                      "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: prioritizes image quality; Prompt First: prioritizes prompt adherence."}),
-                     "LanPaint_Info": ("STRING", {"default": "LanPaint Custom Sampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
+                     "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "The number of steps to stop the LanPaint early, useful for preventing the image from irregular patterns."}),
                       }
                }
 
@@ -416,13 +420,13 @@ class LanPaint_SamplerCustom:
     FUNCTION = "sample"
     CATEGORY = "sampling/custom_sampling"
 
-    def sample(self, model, sampler, sigmas, add_noise, noise_seed, cfg, positive, negative, latent_image, LanPaint_NumSteps, LanPaint_PromptMode, LanPaint_Info=""):
-        model.LanPaint_StepSize = 0.15
-        model.LanPaint_Lambda = 16.0
-        model.LanPaint_Beta = 1.
+    def sample(self, model, sampler, sigmas, add_noise, noise_seed, cfg, positive, negative, latent_image, LanPaint_StepSize, LanPaint_Lambda, LanPaint_Beta, LanPaint_NumSteps, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
+        model.LanPaint_StepSize = LanPaint_StepSize
+        model.LanPaint_Lambda = LanPaint_Lambda
+        model.LanPaint_Beta = LanPaint_Beta
         model.LanPaint_NumSteps = LanPaint_NumSteps
-        model.LanPaint_Friction = 15.
-        model.LanPaint_EarlyStop = 1
+        model.LanPaint_Friction = LanPaint_Friction
+        model.LanPaint_EarlyStop = LanPaint_EarlyStop
         if LanPaint_PromptMode == "Image First":
             model.LanPaint_cfg_BIG = cfg
         else:
